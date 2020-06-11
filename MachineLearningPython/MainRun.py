@@ -4,9 +4,10 @@ import PreprocessDataSet
 
 ### PARAMETROS
 # Rutas de los datasets
-original_dataset_url = "E:/GoogleDrive/Maestria_DataMining/Aprendizaje Automatico (Lunes)/TP1/datasets/hotel_bookings.csv"
-preprocessed_dataset_url = "E:/GoogleDrive/Maestria_DataMining/Aprendizaje Automatico (Lunes)/TP1/datasets/hotel_bookings_preprocessed.csv"
-countries_dataset_url = "E:/GoogleDrive/Maestria_DataMining/Aprendizaje Automatico (Lunes)/TP1/datasets/country-and-continent-codes-list.csv"
+local_base_path = "E:/GoogleDrive/Maestria_DataMining/Aprendizaje Automatico (Lunes)/TP1/GitHub"
+original_dataset_url = local_base_path + "/datasets/hotel_bookings.csv"
+preprocessed_dataset_url = local_base_path + "/datasets/hotel_bookings_preprocessed.csv"
+countries_dataset_url = local_base_path + "/datasets/country-and-continent-codes-list.csv"
 
 
 # Se ejecuta el preprocesamiento del DataSet
