@@ -7,17 +7,14 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     # Carga del dataset original
     booking_dataset = pandas.read_csv(original_dataset_url, parse_dates=['reservation_status_date'])
 
-    # Se llama a la libreria de fechas para ajustar el dataset
+    # Se eliminan registros duplicados
+    booking_dataset.drop_duplicates(keep=False, inplace=True)
+
+    # Se ajustan las variables fecha del dataset
     booking_dataset = DateMng.mapDateAttributes(booking_dataset)
 
-    # Se llama a la libreria de countries para manejo de atributos country
+    # Se ajustan los atributos country
     booking_dataset = CountryData.mapCountryAtributesToDF(countries_dataset_url, booking_dataset)
-
-    # Eliminacion de columnas
-    # Se elimina variable 'hotel' para permitir generalizar para otros hoteles, no especificamente los del dataset
-    # Se elimina variable 'reservation_status' por no ser una variable de entrada, sino una de salida a predecir compatible con 'is_canceled'
-
-    booking_dataset.drop(['hotel', 'reservation_status'], axis=1, inplace=True)
 
     # Se convierte en variable binaria el atributo agent
     booking_dataset['agent'].fillna(0, inplace=True)
@@ -29,12 +26,15 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     booking_dataset['company_b'] = booking_dataset['company'].apply(lambda x: 1 if x > 0 else 0)
     booking_dataset.drop(['company'], axis=1, inplace=True)
 
+    # Se convierte a variables dummies
+    booking_dataset = addDummiesInDataFrame(booking_dataset, 'meal', 'meal_')
+    booking_dataset = addDummiesInDataFrame(booking_dataset, 'market_segment', 'market_seg_')
+    booking_dataset = addDummiesInDataFrame(booking_dataset, 'distribution_channel', 'dist_channel_')
+    booking_dataset = addDummiesInDataFrame(booking_dataset, 'deposit_type', 'deposit_')
+    booking_dataset = addDummiesInDataFrame(booking_dataset, 'customer_type', 'cust_type_')
 
-    #TODO confirmar que campo adr es el valor de la reserva, si es por dia o por el total.
-    #TODO generar campo nuevo de valor de reserva por noche
-    #TODO generar campo nuevo de valor de reserva por persona
-    #TODO separar un test data set con el 20% y dejar el 80% para traininig/validation
-    #TODO armar las 50 particiones del 80% restante con una propocion 80%/20% traininig/validation con 50 semillas distintas
+    # Variable adr se calcula la relacion por huesped. Los menores se los consiera a la mitad. Los babies no se toman para el calculo
+    booking_dataset['adr_por_persona'] = booking_dataset.apply(lambda x: float(x['adr']) / (float(x['adults']) + 0.5 * float(x['children'])) if (float(x['adults']) + 0.5 * float(x['children'])) > 0 else 0, axis=1)
 
     #print(original_dataset.head())
     #original_dataset.info()
@@ -46,4 +46,19 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     #print(original_dataset.isnull().sum())
     #original_dataset.describe()
 
+    # Eliminacion de columnas
+    # Se elimina variable 'hotel' para permitir generalizar para otros hoteles, no especificamente los del dataset
+    # Se elimina variable 'reservation_status' por no ser una variable de entrada, sino una de salida a predecir compatible con 'is_canceled'
+    # Se eliminan las variables 'reserved_room_type' y 'assigned_room_type' por no tener en claro que significa cada categoria,
+    #   si son categoricas ordinales, o sin simplemente ID. Tampoco si el huespues conoce el valor de 'assigned_room_type'
+    #   antes del check in
+    booking_dataset.drop(['hotel', 'reservation_status', 'reserved_room_type', 'assigned_room_type'], axis=1, inplace=True)
+
     return booking_dataset
+
+
+def addDummiesInDataFrame(df_aux, attribute, namePrefix):
+    dummy_attribute = pandas.get_dummies(df_aux[attribute].apply(lambda x: namePrefix + str(x)))
+    df_aux = df_aux.merge(dummy_attribute, left_index=True, right_index=True)
+    df_aux.drop([attribute], axis=1, inplace=True)
+    return df_aux

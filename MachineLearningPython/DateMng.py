@@ -1,5 +1,5 @@
-import pandas
 import datetime
+import PreprocessDataSet
 
 def mapDateAttributes(df):
     # Se crea una nueva columna con la fecha arrival_date en datetime
@@ -13,11 +13,11 @@ def mapDateAttributes(df):
 
     # Se crean columnas dummies para los meses de arrival_date
     # Estas pueden servir para establecer temporadas de tendencias, como ser el pais de origen, los
-    dummy_arrival_month = pandas.get_dummies(df['arrival_date'].apply(lambda x: 'arrival_month_' + str(x.month)))
-    df = df.merge(dummy_arrival_month, left_index=True, right_index=True)
+    df['arrival_month'] = df['arrival_date'].apply(lambda x: str(x.month))
+    df = PreprocessDataSet.addDummiesInDataFrame(df, 'arrival_month', 'arrival_month_')
 
-    # TODO eliminar las variables fecha reservation_status_date	arrival_date
-    df.drop(['reservation_status_date', 'arrival_date'], axis=1, inplace=True)
+    # eliminar la variables reservation_status_date
+    df.drop(['arrival_date', 'reservation_status_date'], axis=1, inplace=True)
 
     return df
 
