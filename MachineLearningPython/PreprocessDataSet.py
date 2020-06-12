@@ -25,6 +25,29 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     booking_dataset['company'].fillna(0, inplace=True)
     booking_dataset['company_b'] = booking_dataset['company'].apply(lambda x: 1 if x > 0 else 0)
     booking_dataset.drop(['company'], axis=1, inplace=True)
+    
+     ## valores faltantes 
+    
+    # variable children 4 registros null
+    # lo reemplazamos por cero
+    booking_dataset['children'].fillna(0, inplace=True)
+    
+    # variables con valores undefined
+    # variale meal, reemplazo por la moda
+    meal_moda= booking_dataset.meal.mode()
+    booking_dataset['meal'] = booking_dataset['meal'].apply(lambda x: meal_moda[0] if x =="Undefined" else x)
+ 
+    #variable market segment, reemplazo con la moda
+    market_segment_moda= booking_dataset.market_segment.mode()
+    booking_dataset['market_segment'] = booking_dataset['market_segment'].apply(lambda x: market_segment_moda[0] if x =="Undefined" else x)
+
+    #variable ditribution_channel, reemplazo con la moda
+    ditribution_channel_moda= booking_dataset.distribution_channel.mode()
+    booking_dataset['distribution_channel'] = booking_dataset['distribution_channel'].apply(lambda x: ditribution_channel_moda[0] if x =="Undefined" else x)
+    
+    ## fin valores faltantes
+    
+    
 
     # Se convierte a variables dummies
     booking_dataset = addDummiesInDataFrame(booking_dataset, 'meal', 'meal_')
@@ -66,28 +89,7 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     #   antes del check in
     booking_dataset.drop(['hotel', 'reservation_status', 'reserved_room_type', 'assigned_room_type'], axis=1, inplace=True)
     
-    ## valores faltantes 
-    
-    # variable children 4 registros null
-    # lo reemplazamos por cero
-    booking_dataset['children'].fillna(0, inplace=True)
-    
-    # variables con valores undefined
-    # variale meal, reemplazo por la moda
-    meal_moda= booking_dataset.meal.mode()
-    booking_dataset['meal'] = booking_dataset['meal'].apply(lambda x: meal_moda[0] if x =="Undefined" else x)
- 
-    #variable market segment, reemplazo con la moda
-    market_segment_moda= booking_dataset.market_segment.mode()
-    booking_dataset['market_segment'] = booking_dataset['market_segment'].apply(lambda x: market_segment_moda[0] if x =="Undefined" else x)
-
-    #variable ditribution_channel, reemplazo con la moda
-    ditribution_channel_moda= booking_dataset.distribution_channel.mode()
-    booking_dataset['distribution_channel'] = booking_dataset['distribution_channel'].apply(lambda x: ditribution_channel_moda[0] if x =="Undefined" else x)
-    
-    ## fin valores faltantes
-    
-    
+     
     
 
     return booking_dataset
