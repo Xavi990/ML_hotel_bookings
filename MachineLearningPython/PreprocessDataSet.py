@@ -32,6 +32,18 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     booking_dataset = addDummiesInDataFrame(booking_dataset, 'distribution_channel', 'dist_channel_')
     booking_dataset = addDummiesInDataFrame(booking_dataset, 'deposit_type', 'deposit_')
     booking_dataset = addDummiesInDataFrame(booking_dataset, 'customer_type', 'cust_type_')
+    
+    ## outliers de adr
+    
+    # ver qué asignamos a los outliers o valores que no tienen sentido???
+    # habria que ver si lo queremos hacer y si sirve lo que hice abajo
+    # pongo cero a los que serían valores incorrectos, por ser menores a 1 y mayor a 5000 
+    # y luego los reemplazo por la media
+    booking_dataset['adr'] = booking_dataset['adr'].apply(lambda x: 0 if x < 1  or x > 5000 else x)
+    mean_adr = booking_dataset.adr.mean()
+    booking_dataset['adr'] = booking_dataset['adr'].apply(lambda x: mean_adr if x == 0  else x)
+    
+    ## fin outliers adr
 
     # Variable adr se calcula la relacion por huesped. Los menores se los consiera a la mitad. Los babies no se toman para el calculo
     booking_dataset['adr_por_persona'] = booking_dataset.apply(lambda x: float(x['adr']) / (float(x['adults']) + 0.5 * float(x['children'])) if (float(x['adults']) + 0.5 * float(x['children'])) > 0 else 0, axis=1)
@@ -53,6 +65,30 @@ def LoadAndPreprocessDataFrame(original_dataset_url, countries_dataset_url):
     #   si son categoricas ordinales, o sin simplemente ID. Tampoco si el huespues conoce el valor de 'assigned_room_type'
     #   antes del check in
     booking_dataset.drop(['hotel', 'reservation_status', 'reserved_room_type', 'assigned_room_type'], axis=1, inplace=True)
+    
+    ## valores faltantes 
+    
+    # variable children 4 registros null
+    # lo reemplazamos por cero
+    booking_dataset['children'].fillna(0, inplace=True)
+    
+    # variables con valores undefined
+    # variale meal, reemplazo por la moda
+    meal_moda= booking_dataset.meal.mode()
+    booking_dataset['meal'] = booking_dataset['meal'].apply(lambda x: meal_moda[0] if x =="Undefined" else x)
+ 
+    #variable market segment, reemplazo con la moda
+    market_segment_moda= booking_dataset.market_segment.mode()
+    booking_dataset['market_segment'] = booking_dataset['market_segment'].apply(lambda x: market_segment_moda[0] if x =="Undefined" else x)
+
+    #variable ditribution_channel, reemplazo con la moda
+    ditribution_channel_moda= booking_dataset.distribution_channel.mode()
+    booking_dataset['distribution_channel'] = booking_dataset['distribution_channel'].apply(lambda x: ditribution_channel_moda[0] if x =="Undefined" else x)
+    
+    ## fin valores faltantes
+    
+    
+    
 
     return booking_dataset
 
