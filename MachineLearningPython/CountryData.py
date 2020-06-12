@@ -10,6 +10,10 @@ def mapCountryAtributesToDF(countries_dataset_url, df):
     countryDF = getCountries(countries_dataset_url)
     df = df.merge(countryDF, how='left', left_on='country', right_on='Three_Letter_Country_Code', suffixes=(False, False))
 
+    # se reemplazan los valores nulos por la moda 'Europe'
+    continente_moda = df['Continent_Name'].mode()
+    df['Continent_Name'].fillna(continente_moda[0], inplace=True)
+    
     # Convierte la variables countries en dummies
     df = PreprocessDataSet.addDummiesInDataFrame(df, 'Continent_Name', 'continent_')
 
@@ -18,8 +22,6 @@ def mapCountryAtributesToDF(countries_dataset_url, df):
     # Se elimina la columna country
     df.drop(['country'], axis=1, inplace=True)
 
-    # se reemplazan los valores nulos por la moda 'Europe'
-    continente_moda = df['Continent_Name'].mode()
-    df['Continent_Name'].fillna(continente_moda[0], inplace=True)
+    
     
     return df
